@@ -15,7 +15,7 @@
             background-color: #8b8b8b;
         }
 
-        .content-box {
+        #content-box {
             background: white;
             padding: 30px;
             width: 50%;
@@ -26,6 +26,13 @@
             display: flex;
             flex-direction: column;
             position: relative;
+
+
+        }
+
+        #content-box>* {
+            opacity: 1;
+            transition: opacity 0.2s;
         }
 
         #timer {
@@ -66,7 +73,7 @@
         }
 
         .incorrect {
-            background-color: rgb(255, 42, 42) !important;
+            border-color: rgb(255, 42, 42) !important;
             color: white;
         }
 
@@ -84,12 +91,16 @@
         .clue {
             background-color: rgb(202, 202, 202);
         }
+
+        #content-box.transition-opacity-out>* {
+            opacity: 0;
+        }
     </style>
 </head>
 
 <body>
 
-    <div class="content-box">
+    <div id="content-box">
         <div id="timer"></div>
         <h3 id="question-container">Press Start to Begin</h3>
         <div id="game-box"></div>
@@ -97,6 +108,7 @@
     </div>
     <script src="./js/timer.js"></script>
     <script>
+        const contentBox = document.getElementById("content-box");
         const questionContainer = document.getElementById('question-container');
         const gameBox = document.getElementById('game-box');
         const startButton = document.getElementById('start-button');
@@ -105,6 +117,7 @@
         let questions = [];
 
         function getGameData() {
+            //swap with fetch when server is up
             const data = {
                 "Questions": [
                     // {
@@ -185,10 +198,19 @@
         }
 
         startButton.addEventListener('click', () => {
-            questions = getGameData();
-            currentQuestionIndex = -1;
-            loadNextQuestion();
-            startButton.style.display = 'none';
+            //transition out
+            contentBox.classList.add('transition-opacity-out');
+            setTimeout(() => {
+                questions = getGameData();
+                currentQuestionIndex = -1;
+                loadNextQuestion();
+                startButton.style.display = 'none';
+
+                setTimeout(() => {
+                    contentBox.classList.remove('transition-opacity-out');
+                }, 0);
+            }, 200);
+
         });
 
         document.addEventListener('keydown', (e) => {

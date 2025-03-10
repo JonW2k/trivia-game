@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centered Box</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #8b8b8b;
+        }
+
+        .content-box {
+            background: white;
+            padding: 30px;
+            width: 50%;
+            min-height: 40%;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        #timer {
+            position: absolute;
+            top: -15px;
+            height: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+
+            padding: 0 40px;
+            background-color: white;
+            border-radius: 20px;
+            border: 3px solid black;
+            place-content: center;
+
+        }
+
+        #game-box {
+            flex-grow: 1;
+            align-content: center;
+        }
+
+        #game-box span {
+            border: 2px solid black;
+            display: inline-block;
+            min-height: 24pt;
+            min-width: 24pt;
+            border-radius: 5px;
+            margin: 0 1px;
+            vertical-align: middle;
+        }
+
+        .word {
+            display: inline-block;
+            margin: 5px 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="content-box">
+        <div id="timer">60</div>
+        <h3 id="question-container">what is the somthing of something?</h3>
+        <div id="game-box"></div>
+    </div>
+</body>
+
+<script>
+    const questionContainer = document.getElementById('question-container');
+    const gameBox = document.getElementById('game-box');
+
+    function questionConstruction(question, answer) {
+        const questionObject = {
+            question,
+            answer,
+            answerTemplate: answer.split(' ').map(word => word.length),
+        }
+        return questionObject;
+    }
+
+    console.log(questionConstruction("A movie with pirates", "Pirates of the Caribbean"));
+
+    function getGameData() {
+        //later will be fetch for now static data
+        const data = {
+            "Questions": [
+                {
+                    "QuestionText": "2020 Grammy Record of the Year?",
+                    "AnswerText": "Billie Eilish",
+                    "AnswerClue": "_i____ ___is_",
+                    "AnswerHash": "1d78f58dc2096dc72c0f771b808345926d4acc0eec73c1f62b862c7fafde91a4"
+                },
+                {
+                    "QuestionText": "Which sport involves running, jumping, and throwing?",
+                    "AnswerText": "Athletics",
+                    "AnswerClue": "A__l_____",
+                    "AnswerHash": "59ab849db966d7b1de9c2e015b5067b0668f0491fb0c73cd9765ee0ffa5cf701"
+                },
+                {
+                    "QuestionText": "Dot-based art technique?",
+                    "AnswerText": "Pointillism",
+                    "AnswerClue": "_o______i__",
+                    "AnswerHash": "7b1093b384e619c7952f6e806dec14d52e9f0d3cfd0f056cc1cf7df70acc7b20"
+                },
+                {
+                    "QuestionText": "Who was the first woman to fly solo across the Atlantic Ocean?",
+                    "AnswerText": "Amelia Earhart",
+                    "AnswerClue": "_m__ia _______",
+                    "AnswerHash": "4772150b2bfeef03edc13691bb588e8d979acec7aacc6b3534bb5c0bb90e3640"
+                },
+                {
+                    "QuestionText": "In which country did the Olympic Games originate?",
+                    "AnswerText": "Greece",
+                    "AnswerClue": "___e__",
+                    "AnswerHash": "4839625482ad85764b6c56518dfe587d7ecb61be04ea3891fb59daeca26cf7b2"
+                }
+            ]
+        };
+
+        return data;
+    }
+
+
+    // define question
+    const question = questionConstruction("A movie with pirates", "Pirates of the Caribbean");
+
+    // const question = {
+    //     question: 'A movie with pirates',
+    //     answer: 'Pirates of the Caribbean',
+    //     answerTemplate: [7, 2, 3, 9]
+    // };
+
+    questionContainer.innerHTML = question.question; // set question text
+
+
+
+    // populate empty blocks with answer template
+    question.answerTemplate.forEach((charCount) => {
+        const wordDiv = document.createElement('div');
+        wordDiv.classList.add('word');
+
+        // create char blocks
+        for (let i = 0; i < charCount; i++) {
+            const span = document.createElement('span');
+            span.innerHTML = '';
+            wordDiv.appendChild(span);
+        }
+
+        gameBox.appendChild(wordDiv);
+    });
+
+    const spans = document.querySelectorAll('#game-box span');
+    console.log(spans);
+
+    //keyboard inputs
+    document.addEventListener('keydown', (e) => {
+        const key = e.key;
+
+        //if backspace
+        if (key === 'Backspace') {
+            console.log("backspace")
+            let lastSpan = null;
+            for (let i = spans.length - 1; i >= 0; i--) {
+                if (spans[i].innerHTML !== '') {
+                    lastSpan = spans[i];
+                    break;
+                }
+            }
+
+            if (lastSpan) {
+                lastSpan.innerHTML = '';
+            }
+        }
+
+        //if key is a character
+        else if (key.length === 1 && key.match(/[a-z]/i)) {
+            console.log("good key")
+            let nextSpan = null;
+            for (let i = 0; i < spans.length; i++) {
+                if (spans[i].innerHTML === '' && key !== ' ') {
+                    nextSpan = spans[i];
+                    break;
+                }
+            }
+
+            if (nextSpan) {
+                nextSpan.innerHTML = key;
+            }
+        }
+
+        else if (key === 'Enter') {
+            if (spans[spans.length - 1].innerHTML !== '') getAnswer();
+        }
+    });
+
+    const getAnswer = () => {
+        let answer = '';
+        const words = document.querySelectorAll('#game-box .word');
+
+        //concatenate all spans add spaces between words
+        words.forEach((word) => {
+            word.querySelectorAll('span').forEach((span) => {
+                answer += span.innerHTML;
+            });
+            answer += ' ';
+        });
+
+        alert(answer);
+    }
+
+    const timerElement = document.getElementById('timer');
+let timerInterval;
+let timeLeft = 10;
+
+// Timer functions
+const startTimer = () => {
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerElement.innerHTML = timeLeft;
+
+        // if time is up, post render the alert
+        if (timeLeft <= 0) {
+            setTimeout(() => {
+                clearInterval(timerInterval);
+                alert('Time is up!');
+            }, 0)
+        }
+
+
+    }, 1000);
+};
+
+const stopTimer = () => {
+    clearInterval(timerInterval);
+};
+
+const pauseTimer = () => {
+    clearInterval(timerInterval);
+};
+
+// Start the timer when the page loads
+// startTimer();
+
+</script>
+
+</html>

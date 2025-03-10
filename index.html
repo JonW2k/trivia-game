@@ -26,8 +26,6 @@
             display: flex;
             flex-direction: column;
             position: relative;
-
-
         }
 
         #content-box>* {
@@ -72,9 +70,18 @@
             margin: 5px 10px;
         }
 
-        .incorrect {
-            border-color: rgb(255, 42, 42) !important;
+        .word>span {
+            transition: all 0.2s;
+        }
+
+        span.correct {
+            background-color: rgb(17, 204, 0);
+            border-color: black;
             color: white;
+        }
+
+        span.incorrect {
+            border-color: rgb(255, 42, 42) !important;
         }
 
         #start-button {
@@ -99,14 +106,15 @@
 </head>
 
 <body>
-
     <div id="content-box">
-        <div id="timer"></div>
+        <div id="timer" style="opacity: 0;"></div>
         <h3 id="question-container">Press Start to Begin</h3>
         <div id="game-box"></div>
         <button id="start-button">Start Game</button>
+        
     </div>
     <script src="./js/timer.js"></script>
+    <script src="./js/utils.js"></script>
     <script>
         const contentBox = document.getElementById("content-box");
         const questionContainer = document.getElementById('question-container');
@@ -120,12 +128,6 @@
             //swap with fetch when server is up
             const data = {
                 "Questions": [
-                    // {
-                    //     "QuestionText": "who is the who of the who who",
-                    //     "AnswerText": "it is the who of the who who who that whoooed",
-                    //     "AnswerClue": "i_ __ t_e w_o of the who who who that wh_ooed",
-                    //     "AnswerHash": "1d78f58dc2096dc72c0f771b808345926d4acc0eec73c1f62b862c7fafde91a4"
-                    // },
                     {
                         "QuestionText": "2020 Grammy Record of the Year?",
                         // "AnswerText": "Billie Eilish",
@@ -161,10 +163,18 @@
             return data.Questions;
         }
 
+        function transitionOut(callback) {
+            contentBox.classList.add('transition-opacity-out');
+            setTimeout(() => {
+                callback();
+                contentBox.classList.remove('transition-opacity-out');
+            }, 200);
+        }
+
         function loadNextQuestion() {
             currentQuestionIndex++;
             if (currentQuestionIndex >= questions.length) {
-                alert("Game Over! You've answered all questions.");
+                transitionOut(showScore);
                 stopTimer();
                 return;
             }
@@ -193,24 +203,18 @@
             });
 
             resetTimer(() => {
-                loadNextQuestion();
+                transitionOut(loadNextQuestion);
             });
         }
 
         startButton.addEventListener('click', () => {
-            //transition out
-            contentBox.classList.add('transition-opacity-out');
-            setTimeout(() => {
+            transitionOut(() => {
                 questions = getGameData();
                 currentQuestionIndex = -1;
                 loadNextQuestion();
                 startButton.style.display = 'none';
-
-                setTimeout(() => {
-                    contentBox.classList.remove('transition-opacity-out');
-                }, 0);
-            }, 200);
-
+                timerElement.style.opacity = 1;
+            });
         });
 
         document.addEventListener('keydown', (e) => {
@@ -273,45 +277,34 @@
 
             const answerHash = await hashAnswer(answer.toLowerCase());
             if (answerHash === questions[currentQuestionIndex].AnswerHash) {
-                loadNextQuestion();
+                document.querySelectorAll('#game-box span').forEach((span) => {
+                    span.classList.add('correct');
+                });
+
+                setTimeout(() => {
+                    transitionOut(loadNextQuestion);
+                }, 200);
             } else {
                 document.querySelectorAll('#game-box span').forEach((span) => {
                     span.classList.add('incorrect');
                 });
 
-                // removes all text, but also removes clue
-
-                // setTimeout(() => {
-                //     document.querySelectorAll('#game-box span').forEach((span) => {
-                //         span.classList.remove('incorrect');
-                //         span.innerHTML = '';
-                //     });
-                // }, 1000);
+                setTimeout(() => {
+                    document.querySelectorAll('#game-box span').forEach((span) => {
+                        span.classList.remove('incorrect');
+                    });
+                }, 400);
             }
         }
 
-
-        // This function hashes the answer using SHA-256 (async)
-        const hashAnswer = async (answer) => {
-            const encoder = new TextEncoder();   // Encode the answer string as bytes
-            const data = encoder.encode(answer);  // Create a byte array from the answer
-
-            // Hash the byte array using SHA-256
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-
-            // Convert the hash buffer to a hex string
-            return arrayBufferToHex(hashBuffer);
+        function showScore() {
+            const score = questions.length;
+            questionContainer.innerText = `You scored ${score}/${score}`;
+            gameBox.innerHTML = '';
+            startButton.style.display = 'block';
+            startButton.innerText = 'Play Again';
         }
 
-        // Helper function to convert ArrayBuffer to hex string
-        function arrayBufferToHex(buffer) {
-            const byteArray = new Uint8Array(buffer);
-            let hexString = '';
-            byteArray.forEach(byte => {
-                hexString += byte.toString(16).padStart(2, '0');
-            });
-            return hexString;
-        }
     </script>
 
 </body>

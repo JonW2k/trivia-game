@@ -5,18 +5,19 @@ let timerInterval;
 let timeLeft = DEFAULT_TIME;
 
 // Timer functions
-const startTimer = (callback = () => {alert('Time is up!');}) => {
+const startTimer = (callback = () => { alert('Time is up!'); }) => {
     timerInterval = setInterval(() => {
         timeLeft--;
-        timerElement.innerHTML = timeLeft;
+        if (timeLeft >= 0) {
+            timerElement.innerHTML = timeLeft;
+        }
 
         // if time is up, post render the alert
-        if (timeLeft <= 0) {
-            setTimeout(() => {
-                clearInterval(timerInterval);
-                callback();
-            }, 0);
+        if (timeLeft < 0) {
+            clearInterval(timerInterval);
+            callback();
         }
+
     }, 1000);
 };
 
@@ -33,6 +34,4 @@ const resetTimer = (callback) => {
     timeLeft = DEFAULT_TIME;
     timerElement.innerHTML = timeLeft;
     startTimer(callback);
-}
-// Start the timer when the page loads
-// startTimer();
+};

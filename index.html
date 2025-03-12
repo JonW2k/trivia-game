@@ -111,7 +111,6 @@
         <h3 id="question-container">Press Start to Begin</h3>
         <div id="game-box"></div>
         <button id="start-button">Start Game</button>
-        
     </div>
     <script src="./js/timer.js"></script>
     <script src="./js/utils.js"></script>
@@ -124,10 +123,19 @@
         let currentQuestionIndex = -1;
         let questions = [];
 
+        let scoreTime = 0;
+        let scoreAnswers = 0;
+
         function getGameData() {
             //swap with fetch when server is up
             const data = {
                 "Questions": [
+                    {
+                        "QuestionText": "Who was the first woman to fly solo across the Atlantic Ocean?",
+                        // "AnswerText": "Amelia Earhart",
+                        "AnswerClue": "_m__ia _______",
+                        "AnswerHash": "4772150b2bfeef03edc13691bb588e8d979acec7aacc6b3534bb5c0bb90e3640"
+                    },
                     {
                         "QuestionText": "2020 Grammy Record of the Year?",
                         // "AnswerText": "Billie Eilish",
@@ -145,12 +153,6 @@
                         // "AnswerText": "Pointillism",
                         "AnswerClue": "_o______i__",
                         "AnswerHash": "7b1093b384e619c7952f6e806dec14d52e9f0d3cfd0f056cc1cf7df70acc7b20"
-                    },
-                    {
-                        "QuestionText": "Who was the first woman to fly solo across the Atlantic Ocean?",
-                        // "AnswerText": "Amelia Earhart",
-                        "AnswerClue": "_m__ia _______",
-                        "AnswerHash": "4772150b2bfeef03edc13691bb588e8d979acec7aacc6b3534bb5c0bb90e3640"
                     },
                     {
                         "QuestionText": "In which country did the Olympic Games originate?",
@@ -244,15 +246,16 @@
             } else if (key.length === 1 && key.match(/[a-z]/i)) {
                 let nextSpan = null;
                 for (let i = 0; i < spans.length; i++) {
+                    if (spans[i].innerHTML === '') {
+                        nextSpan = spans[i];
+                        break;
+                    }
+
                     if (spans[i].classList.contains('clue')) {
                         if (!spans[i].classList.contains("entered") && spans[i].innerHTML.toUpperCase() === key.toUpperCase()) {
                             spans[i].classList.add("entered");
                             break;
                         }
-                    }
-                    if (spans[i].innerHTML === '') {
-                        nextSpan = spans[i];
-                        break;
                     }
                 }
 
@@ -277,6 +280,9 @@
 
             const answerHash = await hashAnswer(answer.toLowerCase());
             if (answerHash === questions[currentQuestionIndex].AnswerHash) {
+                scoreAnswers++;
+                scoreTime += timeLeft;
+
                 document.querySelectorAll('#game-box span').forEach((span) => {
                     span.classList.add('correct');
                 });
@@ -299,7 +305,7 @@
 
         function showScore() {
             const score = questions.length;
-            questionContainer.innerText = `You scored ${score}/${score}`;
+            questionContainer.innerText = `You scored ${scoreAnswers}/${score} with time = ${scoreTime} final score is: ${(scoreAnswers * 100) + (scoreTime * 10)}`;
             gameBox.innerHTML = '';
             startButton.style.display = 'block';
             startButton.innerText = 'Play Again';

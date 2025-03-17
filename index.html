@@ -112,8 +112,8 @@
         <div id="game-box"></div>
         <button id="start-button">Start Game</button>
     </div>
-    <script src="./js/timer.js"></script>
-    <script src="./js/utils.js"></script>
+    <script src="/timer.js"></script>
+    <script src="/utils.js"></script>
     <script>
         const contentBox = document.getElementById("content-box");
         const questionContainer = document.getElementById('question-container');
@@ -125,44 +125,22 @@
 
         let scoreTime = 0;
         let scoreAnswers = 0;
+        let asnwer = '';
 
-        function getGameData() {
-            //swap with fetch when server is up
-            const data = {
-                "Questions": [
-                    {
-                        "QuestionText": "Who was the first woman to fly solo across the Atlantic Ocean?",
-                        // "AnswerText": "Amelia Earhart",
-                        "AnswerClue": "_m__ia _______",
-                        "AnswerHash": "4772150b2bfeef03edc13691bb588e8d979acec7aacc6b3534bb5c0bb90e3640"
-                    },
-                    {
-                        "QuestionText": "2020 Grammy Record of the Year?",
-                        // "AnswerText": "Billie Eilish",
-                        "AnswerClue": "_i____ ___is_",
-                        "AnswerHash": "1d78f58dc2096dc72c0f771b808345926d4acc0eec73c1f62b862c7fafde91a4"
-                    },
-                    {
-                        "QuestionText": "Which sport involves running, jumping, and throwing?",
-                        // "AnswerText": "Athletics",
-                        "AnswerClue": "A__l_____",
-                        "AnswerHash": "59ab849db966d7b1de9c2e015b5067b0668f0491fb0c73cd9765ee0ffa5cf701"
-                    },
-                    {
-                        "QuestionText": "Dot-based art technique?",
-                        // "AnswerText": "Pointillism",
-                        "AnswerClue": "_o______i__",
-                        "AnswerHash": "7b1093b384e619c7952f6e806dec14d52e9f0d3cfd0f056cc1cf7df70acc7b20"
-                    },
-                    {
-                        "QuestionText": "In which country did the Olympic Games originate?",
-                        // "AnswerText": "Greece",
-                        "AnswerClue": "___e__",
-                        "AnswerHash": "4839625482ad85764b6c56518dfe587d7ecb61be04ea3891fb59daeca26cf7b2"
-                    }
-                ]
+        async function getGameData() {
+            try {
+                const response = await fetch('http://localhost:3000/db-test');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log(data);
+                return data.Questions || [];
+            } catch (err) {
+                console.error('Error fetching game data:', err);
+                return [];
             }
-            return data.Questions;
         }
 
         function transitionOut(callback) {
@@ -209,9 +187,12 @@
             });
         }
 
-        startButton.addEventListener('click', () => {
-            transitionOut(() => {
-                questions = getGameData();
+        startButton.addEventListener('click', async () => {
+            transitionOut(async () => {
+                questions = await getGameData();
+                console.log(questions.map(item => {
+                    return item.answer;
+                }));
                 currentQuestionIndex = -1;
                 loadNextQuestion();
                 startButton.style.display = 'none';
@@ -243,7 +224,7 @@
                 if (lastSpan) {
                     lastSpan.innerHTML = '';
                 }
-            } else if (key.length === 1 && key.match(/[a-z]/i)) {
+            } else if (key.length === 1 && key.match(/[a-z0-9]/i)) {
                 let nextSpan = null;
                 for (let i = 0; i < spans.length; i++) {
                     if (spans[i].innerHTML === '') {
@@ -267,6 +248,7 @@
             }
         });
 
+        // bug, if answered too close to end of time it skips next question
         async function checkAnswer() {
             let answer = '';
             document.querySelectorAll('#game-box .word').forEach((word) => {
@@ -290,6 +272,7 @@
                 setTimeout(() => {
                     transitionOut(loadNextQuestion);
                 }, 200);
+                // loadNextQuestion();
             } else {
                 document.querySelectorAll('#game-box span').forEach((span) => {
                     span.classList.add('incorrect');

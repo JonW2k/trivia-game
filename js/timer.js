@@ -1,4 +1,4 @@
-const DEFAULT_TIME = 15;
+const DEFAULT_TIME = 20;
 
 const timerElement = document.getElementById('timer');
 let timerInterval;

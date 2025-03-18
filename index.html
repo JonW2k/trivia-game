@@ -125,7 +125,7 @@
 
         let scoreTime = 0;
         let scoreAnswers = 0;
-        let asnwer = '';
+        let answerLoading = false;
 
         async function getGameData() {
             try {
@@ -152,6 +152,8 @@
         }
 
         function loadNextQuestion() {
+            answerLoading = false;
+
             currentQuestionIndex++;
             if (currentQuestionIndex >= questions.length) {
                 transitionOut(showScore);
@@ -250,6 +252,10 @@
 
         // bug, if answered too close to end of time it skips next question
         async function checkAnswer() {
+            if (answerLoading) { // prevent double submission
+                return;
+            }
+
             let answer = '';
             document.querySelectorAll('#game-box .word').forEach((word) => {
                 word.querySelectorAll('span').forEach((span) => {
@@ -269,6 +275,7 @@
                     span.classList.add('correct');
                 });
 
+                answerLoading = true;
                 setTimeout(() => {
                     transitionOut(loadNextQuestion);
                 }, 200);

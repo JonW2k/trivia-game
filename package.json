@@ -17,6 +17,7 @@
   "homepage": "https://github.com/JonW2k/trivia-game#readme",
   "description": "",
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "pg": "^8.14.0"

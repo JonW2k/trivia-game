@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const { Pool } = require('pg');
 const dotenv = require('dotenv');
-
+const cookieParser = require('cookie-parser');
 dotenv.config();
 
 const app = express();
@@ -19,10 +19,21 @@ const pool = new Pool({
 
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'js')));
+// json body parser
+app.use(express.json());
+// urlencoded body parser
+app.use(express.urlencoded({ extended: false }));
+// cookie parser
+app.use(cookieParser());
 
 // Serve index.html as the main page
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    console.log(req.cookies);
+    if (req.cookies && req.cookies.name && req.cookies.age) {
+        res.sendFile(path.join(__dirname, 'index.html'));
+    } else {
+        res.sendFile(path.join(__dirname, 'login.html'));
+    }
 });
 
 // Test database connection
@@ -46,6 +57,27 @@ app.get('/db-test', async (req, res) => {
         res.json({ success: true, Questions: Questions });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Serve index.html as the main page
+app.post('/validate-score', async (req, res) => {
+    console.log(req.body);
+    if (req.cookies && req.cookies.name && req.cookies.age) {
+        try {
+            const query = `
+                INSERT INTO trv_scores (name, age, score) 
+                VALUES ($1, $2, $3) RETURNING *;
+            `;
+    
+            const values = [req.cookies.name, req.cookies.age, req.body.score];
+    
+            const result = await pool.query(query, values);
+            console.log("Inserted:", result.rows[0]);
+        } catch (error) {
+            console.error("Database Error:", error);
+            throw error;
+        }
     }
 });
 
@@ -78,11 +110,11 @@ function arrayBufferToHex(buffer) {
 
 const generateClue = (answer) => {
     const chars = answer.split('');
-    const regex = /[ .,'";:\-]/;
+    const regex = /[a-zA-Z0-9]/;
     const revealableIndexes = chars
-        .map((char, index) => (!regex.test(char) ? index : null))
+        .map((char, index) => (regex.test(char) ? index : null))
         .filter(index => index !== null);
-    
+
     const revealCount = Math.max(1, Math.floor(revealableIndexes.length * 0.3)); // Reveal about 30% of non-space characters
     const revealIndexes = new Set();
 
@@ -90,5 +122,5 @@ const generateClue = (answer) => {
         revealIndexes.add(revealableIndexes[Math.floor(Math.random() * revealableIndexes.length)]);
     }
 
-    return chars.map((char, index) => (regex.test(char) || revealIndexes.has(index)) ? char : '_').join('');
+    return chars.map((char, index) => (!regex.test(char) || revealIndexes.has(index)) ? char : '_').join('');
 };

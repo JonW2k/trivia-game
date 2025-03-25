@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        .leaderboard {
+            width: 300px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .leaderboard h2 {
+            margin-bottom: 20px;
+        }
+        .player {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: #e0e0e0;
+            border-radius: 5px;
+        }
+        .top1 {
+            background: gold;
+            font-weight: bold;
+            position: relative;
+        }
+        .top2 {
+            background: silver;
+            font-weight: bold;
+        }
+        .top3 {
+            background: #cd7f32;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="leaderboard">
+        <h2>Leaderboard</h2>
+        <div id="players"></div>
+    </div>
+
+    <script>
+        const players = [];
+
+        async function getHighscores(){
+            try {
+                const response = await fetch(`${window.location.origin}/data/getScores`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data.result || [];
+            } catch (err) {
+                console.error('Error fetching game data:', err);
+                return [];
+            }
+        }
+
+        async function renderLeaderboard() {
+            const sortedPlayers = await getHighscores();
+            const playersContainer = document.getElementById("players");
+            playersContainer.innerHTML = "";
+            
+            sortedPlayers.forEach((player, index) => {
+                const div = document.createElement("div");
+                div.classList.add("player");
+                if (index === 0) div.classList.add("top1");
+                if (index === 1) div.classList.add("top2");
+                if (index === 2) div.classList.add("top3");
+                div.innerHTML = `<span>${index + 1}. ${player.name}</span> <span>${player.score}</span>`;
+                playersContainer.appendChild(div);
+            });
+        }
+        
+        renderLeaderboard();
+    </script>
+</body>
+</html>

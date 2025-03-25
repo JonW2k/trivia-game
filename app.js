@@ -36,6 +36,10 @@ app.get('/', (req, res) => {
     }
 });
 
+app.get('/leaderboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'leaderboard.html'));
+});
+
 // Test database connection
 app.get('/db-test', async (req, res) => {
     try {
@@ -60,6 +64,17 @@ app.get('/db-test', async (req, res) => {
     }
 });
 
+
+// Test database connection
+app.get('/data/getScores', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT name, score FROM trv_scores ORDER BY score DESC limit 10;');
+        res.json({ success: true, result: result.rows });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 // Serve index.html as the main page
 app.post('/validate-score', async (req, res) => {
     console.log(req.body);
@@ -69,9 +84,9 @@ app.post('/validate-score', async (req, res) => {
                 INSERT INTO trv_scores (name, age, score) 
                 VALUES ($1, $2, $3) RETURNING *;
             `;
-    
+
             const values = [req.cookies.name, req.cookies.age, req.body.score];
-    
+
             const result = await pool.query(query, values);
             console.log("Inserted:", result.rows[0]);
         } catch (error) {

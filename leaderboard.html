@@ -56,7 +56,7 @@
 
         async function getHighscores(){
             try {
-                const response = await fetch(`${window.location.origin}/data/getScores`);
+                const response = await fetch(`${window.location.origin}/trivia/data/getScores`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }

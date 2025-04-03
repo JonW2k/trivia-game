@@ -18,7 +18,8 @@ const pool = new Pool({
 });
 
 // Serve static files from the public directory
-app.use(express.static(path.join(__dirname, 'js')));
+app.use("/trivia", express.static(path.join(__dirname, 'js'), {}));
+
 // json body parser
 app.use(express.json());
 // urlencoded body parser
@@ -26,8 +27,15 @@ app.use(express.urlencoded({ extended: false }));
 // cookie parser
 app.use(cookieParser());
 
+const triviaRoute = express.Router();
+app.use("/trivia", triviaRoute);
+
+app.use((req, res) => {
+    res.redirect(`/trivia${req.originalUrl}`);
+});
+
 // Serve index.html as the main page
-app.get('/', (req, res) => {
+triviaRoute.get('/', (req, res) => {
     console.log(req.cookies);
     if (req.cookies && req.cookies.name && req.cookies.age) {
         res.sendFile(path.join(__dirname, 'index.html'));
@@ -36,12 +44,12 @@ app.get('/', (req, res) => {
     }
 });
 
-app.get('/leaderboard', (req, res) => {
+triviaRoute.get('/leaderboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'leaderboard.html'));
 });
 
 // Test database connection
-app.get('/db-test', async (req, res) => {
+triviaRoute.get('/db-test', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM trv_questions ORDER BY random() limit 10;');
         const Questions = [];
@@ -66,7 +74,7 @@ app.get('/db-test', async (req, res) => {
 
 
 // Test database connection
-app.get('/data/getScores', async (req, res) => {
+triviaRoute.get('/data/getScores', async (req, res) => {
     try {
         const result = await pool.query('SELECT name, score FROM trv_scores ORDER BY score DESC limit 10;');
         res.json({ success: true, result: result.rows });
@@ -76,7 +84,7 @@ app.get('/data/getScores', async (req, res) => {
 });
 
 // Serve index.html as the main page
-app.post('/validate-score', async (req, res) => {
+triviaRoute.post('/validate-score', async (req, res) => {
     console.log(req.body);
     if (req.cookies && req.cookies.name && req.cookies.age) {
         try {

@@ -131,7 +131,7 @@
             onclick="document.cookie='name=';document.cookie='age=';window.location.reload();">
             <i class="bi bi-box-arrow-right"></i> Logout
         </button>
-        <a href="/leaderboard" class="btn btn-primary">
+        <a href="/trivia/leaderboard" class="btn btn-primary">
             <i class="bi bi-trophy"></i> Leaderboard
         </a>
     </div>
@@ -145,8 +145,8 @@
         <button id="skip" class="btn btn-success" style="display: none;" onclick="skipQuestion()">skip</button>
     </div>
 
-    <script src="/timer.js"></script>
-    <script src="/utils.js"></script>
+    <script src="/trivia/timer.js"></script>
+    <script src="/trivia/utils.js"></script>
     <script>
         const contentBox = document.getElementById("content-box");
         const questionContainer = document.getElementById('question-container');
@@ -166,7 +166,7 @@
         async function getGameData() {
             try {
                 console.log(window.location.origin)
-                const response = await fetch(`${window.location.origin}/db-test`);
+                const response = await fetch(`${window.location.origin}/trivia/db-test`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
@@ -360,7 +360,7 @@
 
             try {
                 console.log(window.location.origin)
-                const response = await fetch(`${window.location.origin}/validate-score`, {
+                const response = await fetch(`${window.location.origin}/trivia/validate-score`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

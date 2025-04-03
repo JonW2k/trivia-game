@@ -85,9 +85,9 @@
             border-color: rgb(255, 42, 42) !important;
         }
 
-        #skip{
+        #skip {
             width: fit-content;
-            margin-left:auto;
+            margin-left: auto;
         }
 
         .clue {
@@ -127,7 +127,10 @@
 
 <body>
     <div class="position-absolute top-0 end-0 m-3">
-        <button class="btn btn-danger me-2" 
+        <button onclick="openKeyboard()" class="btn btn-secondary me-2">
+            <i class="bi bi-keyboard"></i>
+        </button>
+        <button class="btn btn-danger me-2"
             onclick="document.cookie='name=';document.cookie='age=';window.location.reload();">
             <i class="bi bi-box-arrow-right"></i> Logout
         </button>
@@ -135,6 +138,7 @@
             <i class="bi bi-trophy"></i> Leaderboard
         </a>
     </div>
+    <input id="hiddenInput" style="opacity: 0; position: absolute; left: -9999px;">
 
     <div id="content-box" display="none">
         <div id="timer" style="opacity: 0;"></div>
@@ -374,6 +378,11 @@
             } catch (err) {
                 console.error('Error on Post', err);
             }
+        }
+
+        function openKeyboard() {
+            const input = document.getElementById('hiddenInput');
+            input.focus();
         }
 
 

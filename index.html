@@ -285,7 +285,10 @@
                     }
 
                     if (spans[i].classList.contains('clue')) {
-                        if (!spans[i].classList.contains("entered") && spans[i].innerHTML.toUpperCase() === key.toUpperCase()) {
+                        if(i + 1 < spans.length - 1 && spans[i + 1].innerHTML != '') {
+                            continue;
+                        }
+                        else if (!spans[i].classList.contains("entered") && spans[i].innerHTML.toUpperCase() === key.toUpperCase()) {
                             spans[i].classList.add("entered");
                             break;
                         }

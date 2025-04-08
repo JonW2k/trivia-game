@@ -30,9 +30,10 @@ app.use(cookieParser());
 const triviaRoute = express.Router();
 app.use("/trivia", triviaRoute);
 
-app.use((req, res) => {
-    res.redirect(`/trivia${req.originalUrl}`);
+app.get("/", (req, res) => {
+    res.redirect(`/trivia`);
 });
+
 
 // Serve index.html as the main page
 triviaRoute.get('/', (req, res) => {
@@ -51,7 +52,7 @@ triviaRoute.get('/leaderboard', (req, res) => {
 // Test database connection
 triviaRoute.get('/db-test', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM trv_questions ORDER BY random() limit 10;');
+        const result = await pool.query('SELECT * FROM trv_questions ORDER BY random() limit 6;');
         const Questions = [];
         if (result.rows.length > 0) {
 
@@ -103,6 +104,11 @@ triviaRoute.post('/validate-score', async (req, res) => {
         }
     }
 });
+
+
+// triviaRoute.get('/test', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'test.html'));
+// });
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
